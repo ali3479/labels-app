@@ -31,14 +31,11 @@ st.set_page_config(page_title="برنامج طباعة الملصقات الذك
 # محاولة تحميل الخط العربي للـ PDF ليكون الخط بارزاً جداً
 @st.cache_resource
 def load_pdf_font():
-    win_font_path = os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts', 'arialbd.ttf')
-    if not os.path.exists(win_font_path):
-        win_font_path = os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts', 'arial.ttf')
-    
-    if os.path.exists(win_font_path):
+    font_path = "Amiri-Bold.ttf"
+    if os.path.exists(font_path):
         try:
-            pdfmetrics.registerFont(TTFont('ArabicArialBold', win_font_path))
-            return 'ArabicArialBold'
+            pdfmetrics.registerFont(TTFont('ArabicAmiriBold', font_path))
+            return 'ArabicAmiriBold'
         except:
             return 'Helvetica-Bold'
     return 'Helvetica-Bold'
