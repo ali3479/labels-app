@@ -1,19 +1,3 @@
-from pyngrok import ngrok
-import sys
-import os
-
-# 1. فتح نفق إنترنت للمنفذ 8501 وتوليد رابط للتابلت والجوال
-try:
-    # إغلاق أي أنفاق قديمة لتفادي تداخل المنافذ
-    ngrok.kill() 
-    public_url = ngrok.connect(8501)
-    print("\n" + "="*60)
-    print(f"🔗 رابط التابلت والجوال الحقيقي هو: {public_url.public_url}")
-    print("="*60 + "\n")
-except Exception as e:
-    print(f"⚠️ تنبيه Ngrok: {e}")
-
-# باقي المكتبات المطلوبة للبرنامج والويب
 import streamlit as st
 import pandas as pd
 from reportlab.lib.pagesizes import A4
@@ -24,11 +8,12 @@ from reportlab.pdfbase.ttfonts import TTFont
 import arabic_reshaper
 from bidi.algorithm import get_display
 import io
+import os
 
-# إعدادات صفحة الويب لتناسب شاشات التابلت بمرونة بالمس
+# إعدادات صفحة الويب لتناسب شاشات التابلت بمرونة باللمس
 st.set_page_config(page_title="برنامج طباعة الملصقات الذكي", layout="wide")
 
-# محاولة تحميل الخط العربي للـ PDF ليكون الخط بارزاً جداً
+# محاولة تحميل الخط العربي المرفوع للمشروع لضمان عمله على سيرفر لينكس (Streamlit Cloud)
 @st.cache_resource
 def load_pdf_font():
     font_path = "Amiri-Bold.ttf"
@@ -48,12 +33,8 @@ def find_column(columns, possibilities):
             return col
     return None
 
-st.title("🏷️ برنامج طباعة الملصقات الذكي للتابلت والكمبيوتر")
+st.title("🏷️ برنامج طباعة الملصقات الذكي")
 st.write("ارفع ملف الإكسيل، اختر الأسماء، وحمّل ملف الـ PDF جاهزاً للطباعة فوراً.")
-
-# طباعة الرابط أيضاً في واجهة الموقع للتأكيد والراحة
-if 'public_url' in locals():
-    st.info(f"📱 يمكنك فتح هذا الموقع من التابلت عبر الرابط التالي: {public_url.public_url}")
 
 # 1. زر رفع ملف الإكسيل
 uploaded_file = st.file_uploader("1. اختر ملف الإكسيل من جهازك", type=["xlsx", "xls"])
@@ -103,7 +84,6 @@ if uploaded_file is not None:
             
             for idx, person in enumerate(names_list):
                 with cols[idx % 6]:
-                    # مربع اختيار لكل اسم
                     if st.checkbox(person["display"], key=f"user_{idx}"):
                         selected_indices.append(idx)
             
@@ -141,13 +121,14 @@ if uploaded_file is not None:
                     grid_data.append(row)
                 
                 if grid_data:
+                    # بناء الجدول وتطبيق خط Amiri العربي المرفوع وتكبير الحجم
                     t = Table(grid_data, colWidths=[180, 180, 180], rowHeights=[90]*len(grid_data))
                     t.setStyle(TableStyle([
                         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
                         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
                         ('TEXTCOLOR', (0,0), (-1,-1), colors.black),
-                        ('FONTNAME', (0,0), (-1,-1), font_name),
-                        ('FONTSIZE', (0,0), (-1,-1), 14),
+                        ('FONTNAME', (0,0), (-1,-1), font_name),  # ربط الخط المحدث هنا
+                        ('FONTSIZE', (0,0), (-1,-1), 20),         # حجم خط كبير وواضح للملصقات
                         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.lightgrey),
                         ('BOX', (0,0), (-1,-1), 1, colors.grey),
                     ]))
@@ -163,7 +144,7 @@ if uploaded_file is not None:
                         use_container_width=True
                     )
             else:
-                st.info("💡 الرجاء تحديد اسم واحد على الأقل من الشبكة أعلاه لتفعيل زر الطباعة.")
+                st.info("💡 الرجاء تحديد اسم واحد على الأثل من الشبكة أعلاه لتفعيل زر الطباعة.")
                 
     except Exception as e:
         st.error(f"حدث خطأ أثناء قراءة الملف: {e}")
